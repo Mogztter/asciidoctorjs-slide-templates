@@ -2,10 +2,12 @@ div.listingblock(id=node.$id(),class=node.$role())
     if node.$title() != false
         div.title !{node.$captioned_title()}
     div.content
-        - nowrap = !(node.document.$attr("prewrap")) || node.$option('nowrap')
-        if node.$style() == "source"
-            - pre_class = ['highlight']
-            - pre_lang = ""
+        - var nowrap = !(node.document.$attr("prewrap",false)) || node['$option?']('nowrap')
+        if node.$style() == "source" || (node.$style() == 'listing' && node.$attr(1,'listing'))
+            - language = node.$attr('language',false)
+            - var code_class = language ? [language, "language-#{language}"] : ""
+            - var pre_class = ['highlight']
+            - var pre_lang = ""
             case node.$attr("source-highlighter")
                 when "coderay"
                     - pre_class = ['CodeRay']
@@ -13,14 +15,15 @@ div.listingblock(id=node.$id(),class=node.$role())
                     - pre_class = ['pygments','highlight']
                 when 'prettify'
                     - pre_class = ['prettyprint']
-                    - pre_class.push(node.$attr("linenums"));
-                    - pre_class.push(node.$attr("language"));
-                    - pre_class.push("language-#{node.$attr('language')}");
+                    - pre_class.push(node.$attr("linenums",''));
+                    - pre_class.push(language ? language : '');
+                    - pre_class.push(language ? "language-#{language}" : '');
                 when 'html-pipeline'
-                    - pre_lang = node.$attr("language")
-                    - pre_class = code_class = nil
+                    - pre_lang = language
+                    - pre_class = code_class = ''
                     - nowrap = false
+            - pre_class.push(nowrap ? nowrap : '')
             pre(class=pre_class,lang=pre_lang)
-                code(class=[node.$attr("language"), "language-#{node.$attr('language')}"]) !{node.$content()}
+                code(class=[code_class]) !{node.$content()}
         else
             pre(class=nowrap ? "nowrap" : "") !{node.$content()}
